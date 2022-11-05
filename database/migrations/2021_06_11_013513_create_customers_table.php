@@ -17,7 +17,7 @@ class CreateCustomersTable extends Migration
             $table->id();
             $table->string('user_id');
             $table->string('personal_id');
-            $table->string('acc_no');
+            $table->string('acc_no')->nullable();
             $table->string('spn')->nullable();
             $table->string('geocode')->nullable();
             $table->string('structure_id')->nullable();

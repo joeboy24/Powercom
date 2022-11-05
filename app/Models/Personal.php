@@ -12,23 +12,23 @@ class Personal extends Model
     protected $fillable = ['user_id', 'customer_no', 'name', 'address', 'contact', 'business', 'comp_hse', 'proj_cust', 'est_sensor', 'email', 'dig_address', 'coords'];
     
     public function customer(){
-        return $this->belongsTo('App\Models\Customer');
+        return $this->hasMany('App\Models\Customer');
     }
 
     public function remarks(){
-        return $this->belongsTo('App\Models\Remarks');
+        return $this->hasMany('App\Models\Remarks');
     }
 
     public function technical(){
-        return $this->belongsTo('App\Models\Technical');
+        return $this->hasMany('App\Models\Technical');
     }
 
-    public function reccomendation(){
-        return $this->belongsTo('App\Models\Reccomendtion');
+    public function recc(){
+        return $this->hasMany('App\Models\Reccomendation');
     }
 
     public function user(){
-        return $this->belongsTo('App\Models\User');
+        return $this->hasMany('App\Models\User');
     }
     
 }

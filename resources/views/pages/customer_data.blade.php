@@ -26,7 +26,7 @@
                     <div class="form-group row">
                         <p class="input_lable">Account No</p>
                         <div class="col-md-12">
-                            <input id="acc_no" placeholder="" type="text" class="form-control" name="acc_no" required autofocus>
+                            <input id="acc_no" placeholder="" type="text" class="form-control" name="acc_no" autofocus>
                         </div>
                     </div>
 

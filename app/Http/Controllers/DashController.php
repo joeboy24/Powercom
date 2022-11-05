@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\General;
 use App\Models\Remarks;
 use App\Models\Customer;
 use App\Models\Personal;
@@ -125,7 +127,6 @@ class DashController extends Controller
                 break;
         
                 case 'save_tech':
-
                     // Save Technical Data
                     $cust_id2 = Session::get('cust_id2');
 
@@ -164,9 +165,13 @@ class DashController extends Controller
                         'height' => $request->input('height'),
                         'pole_condition' => $request->input('pole_condition'),
                         'meter_phase_inst' => $request->input('meter_phase_inst'),
-                    ]);
+                    ]); 
 
-                    return redirect('/recc')->with('success', 'Technical data successfully saved');
+                    if (auth()->user()->status != 'administator') {
+                        return redirect('/')->with('success', 'Data successfully saved');
+                    }else{
+                        return redirect('/recc')->with('success', 'Technical data successfully saved');
+                    }
     
                 break;
 
@@ -215,8 +220,272 @@ class DashController extends Controller
                     return view('pages.entry_success')->with('success', 'Remarks successfully saved');
     
                 break;
-        
 
+                case 'search_report':
+
+                    // Search Report ->orderBy('id', 'DESC')
+                    $phase = $request->input('phase');
+                    $trans = $request->input('trans');
+
+                    if ($phase == 'All') {
+                        if ($trans == 'All') {
+                            $report = Technical::where('del', 'no')->get();
+                        } else {
+                            $report = Technical::where('del', 'no')->where('trans_no', 'LIKE', '%'.$trans.'%')->get();
+                        }
+                        
+                    } else {
+                        if ($trans == 'All') {
+                            $report = Technical::where('del', 'no')->where('ph', 'LIKE', '%'.$phase.'%')->get();
+                        } else {
+                            $report = Technical::where('del', 'no')->where('ph', 'LIKE', '%'.$phase.'%')->where('trans_no', 'LIKE', '%'.$trans.'%')->get();
+                        }
+                    }
+                    
+                    $pass = [
+                        'c' => 1,
+                        'technical' => $report
+                    ];
+
+                    // $cart = array();
+                    // $cart[] = 13;
+                    // $cart[] = 14;
+                    // // etc
+
+                    // $stack = array();
+                    // for ($i=0; $i < 2; $i++) { 
+                    //     $a = array();
+                    //     array_push($a, 'jhjhj');
+                    //     // array_push($stack, $report[0]);
+                    // }
+                    // return $a;
+
+                    // return $report[1]->personal;
+
+                    $i = 0;
+                    $tech = $report;
+                    // $tech = User::select(['name', 'email'])->get();
+                    foreach ($tech as $key => $value) {
+                        $tech[$key]['user_id'] = $tech[$i]->personal->name;
+                        $tech[$key]['personal_id'] = $tech[$i]->personal->address.' / '.$tech[$i]->personal->contact;
+                        $tech[$key]['credit_meter'] = $tech[$i]->personal->business;
+
+                        // $tech[$key]['pole_dist'] = $tech[$i]->personal->customer->acc_no;
+                        // $tech[$key]['size'] = $tech[$i]->personal->customer->structure_id;
+                        // $tech[$key]['pole_no'] = $tech[$i]->personal->customer->service_tyoe;
+                        $i++;
+                    }
+                    // return $tech;
+
+
+                    // $original = array();
+                    // $new = array(
+                    //     'title' => 'Time',
+                    //     'width' => 10
+                    // );
+                    // array_splice($original,0,0); // can be more items
+                    // // array_splice($original,0,0,array(['random_string','ghggghh']));
+                    // $original[1] = $new;  // replaced with actual item
+                    // return $original[1];
+
+
+                    // $cart = array();
+                    // for($i=0;$i<=5;$i++){
+                    //     $cart[] = $report[$i];  
+                    // }
+                    // return $cart;
+
+
+                    // $a = $report;
+                    // array_push($a,"blue","yellow");
+                    // return $a;
+
+                    // foreach ($report as $item) {
+                    //     array_push($report, $item->personal->name, $item->personal->address);
+                    // }
+
+
+                    // return $report;
+                    // Session::put('tech', $report);
+                    Session::put('tech', $tech);
+                    return view('pages.reports')->with($pass);
+                    return redirect('/remarks')->with('success', 'Reccomendation successfully saved');
+    
+                break;
+
+                case 'search_load':
+
+                    $ps = Personal::where('del', 'no')->get();
+                    $cs = Customer::where('del', 'no')->get();
+                    $tc = Technical::where('del', 'no')->get();
+                    
+                    foreach ($ps as $item) {
+                        $gen = General::firstOrCreate([
+                            'user_id' => auth()->user()->id,
+                            'personal_id' => $item->id,
+                        ]);
+                        // }
+                        // foreach ($ps as $item) {
+                        
+                        if ($item->customer != '' && $item->technical != '' && $item->recc != '') {
+                            // $general = General::firstOrCreate([
+                            //     'user_id' => auth()->user()->id,
+                            //     'customer_no' => $item->customer_no,
+                            //     'name' => $item->name,
+                            //     'address' => $item->address,
+                            //     'contact' => $item->contact,
+                            //     'business' => $item->buss_nature,
+                            //     'comp_hse' => $item->compound_sel,
+                            //     'proj_cust' => $item->proj_cust,
+                            //     'est_sensor' => $item->sensor,
+                            //     'email' => $item->email,
+                            //     'dig_address' => $item->dig_add,
+                            //     'coords' => $item->coords,
+
+                            //     'acc_no' => $item->customer[0]->acc_no,
+                            //     'spn' => $item->customer[0]->spn,
+                            //     'geocode' => $item->customer[0]->geocode,
+                            //     'structure_id' => $item->customer[0]->structure_id,
+                            //     'service_type' => $item->customer[0]->service_type,
+
+                            //     'meter_no' => $item->technical[0]->meter_no,
+                            //     'meter_rating' => $item->technical[0]->meter_rating,
+                            //     'ph' => $item->technical[0]->ph,
+                            //     'meter_loc' => $item->technical[0]->meter_loc,
+                            //     'credit_meter' => $item->technical[0]->credit_meter,
+                            //     'prepaid_meter' => $item->technical[0]->prepaid_meter,
+                            //     'type' => $item->technical[0]->type,
+                            //     'meter_reading' => $item->technical[0]->meter_reading,
+                            //     'meter_bal' => $item->technical[0]->meter_bal,
+                            //     'pole_dist' => $item->technical[0]->pole_dist,
+                            //     'size' => $item->technical[0]->size,
+                            //     'pole_no' => $item->technical[0]->pole_no,
+                            //     'trans_no' => $item->technical[0]->trans_no,
+                            //     'trans_rate' => $item->technical[0]->trans_rate,
+                            //     'lines_per_pole' => $item->technical[0]->lines_per_pole,
+                            //     'no_of_poles' => $item->technical[0]->no_of_poles,
+                            //     'line_condition' => $item->technical[0]->line_condition,
+                            //     'damage_length' => $item->technical[0]->damage_length,
+                            //     'gmt' => $item->technical[0]->gmt,
+                            //     'pmt' => $item->technical[0]->pmt,
+                            //     'cwa' => $item->technical[0]->cwa,
+                            //     'height' => $item->technical[0]->height,
+                            //     'pole_condition' => $item->technical[0]->pole_condition,
+                            //     'meter_phase_inst' => $item->technical[0]->meter_phase_inst,
+
+                            //     // 'rate_to_install' => $item->recc[0]->rate_to_install,
+                            //     // 'extra_cable_needed' => $item->recc[0]->extra_cable_needed,
+                            //     // 'date_of_visit' => $item->recc[0]->date_of_visit,
+                            //     // 'inspected_by' => $item->recc[0]->inspected_by,
+
+                            //     // 'approved_status' => $item->remarks[0]->approved_status,
+                            //     // 'no_reason' => $item->remarks[0]->no_reason,
+                            //     // 'date_approved' => $item->remarks[0]->date_approved,
+                            //     // 'auth_by' => $item->remarks[0]->auth_by,
+
+                            // ]);
+                        }
+
+                        // $gen = General::find($id);
+                        $gen->customer_no = $item->customer_no;
+                        $gen->name = $item->name;
+                        $gen->address = $item->address;
+                        $gen->contact = $item->contact;
+                        $gen->business = $item->buss_nature;
+                        $gen->comp_hse = $item->compound_sel;
+                        $gen->proj_cust = $item->proj_cust;
+                        $gen->est_sensor = $item->sensor;
+                        $gen->email = $item->email;
+                        $gen->dig_address = $item->dig_add;
+                        $gen->coords = $item->coords;
+
+                        $c = Customer::where('personal_id', $item->id)->first();
+                        if ($c) {
+                            $gen->acc_no = $c->acc_no;
+                            $gen->spn = $c->spn;
+                            $gen->geocode = $c->geocode;
+                            $gen->structure_id = $c->structure_id;
+                            $gen->service_type = $c->service_type;
+                        }
+
+                        $t = Technical::where('personal_id', $item->id)->first();
+                        if ($t) {
+                            $gen->meter_no = $t->meter_no;
+                            $gen->meter_rating = $t->meter_rating;
+                            $gen->ph = $t->ph;
+                            $gen->meter_loc = $t->meter_loc;
+                            $gen->credit_meter = $t->credit_meter;
+                            $gen->prepaid_meter = $t->prepaid_meter;
+                            $gen->type = $t->type;
+                            $gen->meter_reading = $t->meter_reading;
+                            $gen->meter_bal = $t->meter_bal;
+                            $gen->pole_dist = $t->pole_dist;
+                            $gen->size = $t->size;
+                            $gen->pole_no = $t->pole_no;
+                            $gen->trans_no = $t->trans_no;
+                            $gen->trans_rate = $t->trans_rate;
+                            $gen->lines_per_pole = $t->lines_per_pole;
+                            $gen->no_of_poles = $t->no_of_poles;
+                            $gen->line_condition = $t->line_condition;
+                            $gen->damage_length = $t->damage_length;
+                            $gen->gmt = $t->gmt;
+                            $gen->pmt = $t->pmt;
+                            $gen->cwa = $t->cwa;
+                            $gen->height = $t->height;
+                            $gen->pole_condition = $t->pole_condition;
+                            $gen->meter_phase_inst = $t->meter_phase_inst;
+                        }
+
+                        $r = Reccomendation::where('personal_id', $item->id)->first();
+                        if ($r) {
+                            $gen->rate_to_install = $r->rate_to_install;
+                            $gen->extra_cable_needed = $r->extra_cable_needed;
+                            $gen->date_of_visit = $r->date_of_visit;
+                            $gen->inspected_by = $r->inspected_by;
+                        }
+
+                        $r2 = Remarks::where('personal_id', $item->id)->first();
+                        if ($r2) {
+                            $gen->approved_status = $r2->approved_status;
+                            $gen->no_reason = $r2->no_reason;
+                            $gen->date_approved = $r2->date_approved;
+                            $gen->auth_by = $r2->auth_by;
+                            // $gen->status = 'complete';
+                        }
+                        $gen->save();
+                        
+                    }
+
+                    $phase = $request->input('phase');
+                    $trans = $request->input('trans');
+
+                    if ($phase == 'All') {
+                        if ($trans == 'All') {
+                            $report = General::where('del', 'no')->get();
+                        } else {
+                            $report = General::where('del', 'no')->where('trans_no', 'LIKE', '%'.$trans.'%')->get();
+                        }
+                        
+                    } else {
+                        if ($trans == 'All') {
+                            $report = General::where('del', 'no')->where('ph', 'LIKE', '%'.$phase.'%')->get();
+                        } else {
+                            $report = General::where('del', 'no')->where('ph', 'LIKE', '%'.$phase.'%')->where('trans_no', 'LIKE', '%'.$trans.'%')->get();
+                        }
+                    }
+                    
+                    $pass = [
+                        'c' => 1,
+                        'report' => $report
+                    ];
+
+                    // return 'Done Moving';
+
+                    Session::put('report', $report);
+                    return view('pages.reports')->with($pass);
+                    return redirect('/remarks')->with('success', 'Reccomendation successfully saved');
+
+                break;
 
             }
 

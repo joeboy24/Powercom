@@ -24,6 +24,9 @@ Route::get('/customer', 'PagesController@customer');
 Route::get('/technical', 'PagesController@technical');
 Route::get('/recc', 'PagesController@recc');
 Route::get('/remarks', 'PagesController@remarks');
+
+Route::get('/reports', 'PagesController@reports');
+Route::get('/userexport', 'ExportsController@userexport');
 // Route::get('/database', 'PagesController@database');
 
 Route::resource('/dashboard', 'DashController');

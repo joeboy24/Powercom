@@ -21,7 +21,7 @@
                         <a href="/dashboard" class="refresh_a"><button type="button" class="btn search_btn" id="mb"><i class="fa fa-refresh"></i></button></a>
                     </div>
                 </form>
-            </div>
+            </div> 
 
             <div class="col_120">
 

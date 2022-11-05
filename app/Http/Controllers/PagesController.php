@@ -8,11 +8,17 @@ use App\Models\Customer;
 use App\Models\Remarks;
 use App\Models\Technical;
 use App\Models\Reccomendation;
+use App\Models\General;
 use Session;
 
 class PagesController extends Controller
 {
     //
+
+    public function __construct(){
+        $this->middleware('auth');
+    }
+
     public function index(){
         // $customer = Customer::all();
         // return $customer;
@@ -46,6 +52,9 @@ class PagesController extends Controller
     }
 
     public function recc(){
+        if (auth()->user()->status != 'administator') {
+            return redirect('/')->with('error', 'Oops..! Access denied');
+        }
         $cust_id2 = Session::get('cust_id2');
         if($cust_id2 == ''){
             return redirect('/');
@@ -68,5 +77,14 @@ class PagesController extends Controller
             'personal' => $personal
         ];
         return view('pages.data_view')->with($pass);
+    }
+
+    public function reports(){
+        $report = General::where('del', 'no')->orderBy('id', 'DESC')->get();
+        $pass = [
+            'c' => 1,
+            'report' => $report
+        ];
+        return view('pages.reports')->with($pass);
     }
 }
